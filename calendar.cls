@@ -20,6 +20,7 @@
 \RequirePackage{calc}
 \RequirePackage{polyglossia}
 \RequirePackage{fontspec}
+\RequirePackage{ifthen}
 
 %%
 %% DOCUMENT
@@ -42,13 +43,18 @@
 \newcommand{\wkrowh}{\textheight / 21}
 \setlength{\arrayrulewidth}{0.1mm}
 
-\newcommand{\weekdayfont}{\footnotesize\textcolor{black}}
-\newcommand{\numdayfont}{\Large\textcolor{rgray}}
-\newcommand{\monthfont}{\footnotesize\scshape\color{rgray}}
-% must use \color instead of \textcolor for monthfont
-% [no known reason]
+
 \definecolor{rulegray}{cmyk}{0,0,0,0.5}
 \definecolor{rgray}{cmyk}{0,0,0,0.5}
+\definecolor{darkred}{cmyk}{0.5,1,1,0}
+\definecolor{pastelred}{cmyk}{0.2,1,1,0}
+
+\newcommand{\weekdayfont}[1]{\footnotesize\textcolor{#1}}
+\newcommand{\numdayfont}[1]{\Large\textcolor{#1}}
+\newcommand{\monthfont}{\footnotesize\scshape\color{rgray}}
+\newcommand{\holidayfont}{\footnotesize\textcolor{black}}
+% must use \color instead of \textcolor for monthfont
+% [no known reason]
 
 % Keys and defaults
 \define@key{week}{da}{\def\nda{#1}}
@@ -58,11 +64,25 @@
 \define@key{week}{de}{\def\nde{#1}}
 \define@key{week}{df}{\def\ndf{#1}}
 \define@key{week}{dg}{\def\ndg{#1}}
+\define@key{week}{aholiday}{\def\hola{#1}}
+\define@key{week}{bholiday}{\def\holb{#1}}
+\define@key{week}{choliday}{\def\holc{#1}}
+\define@key{week}{dholiday}{\def\hold{#1}}
+\define@key{week}{eholiday}{\def\hole{#1}}
+\define@key{week}{fholiday}{\def\holf{#1}}
+\define@key{week}{gholiday}{\def\holg{#1}}
 \define@key{week}{curmonth}{\def\ncmonth{#1}}
 \define@key{week}{newmonth}{\def\nnmonth{#1}}
 \define@key{week}{newday}{\def\nnday{#1}}
 \setkeys{week}{
     da=00,db=00,dc=00,dd=00,de=00,df=00,dg=00,
+    aholiday=None,
+    bholiday=None,
+    choliday=None,
+    dholiday=None,
+    eholiday=None,
+    fholiday=None,
+    gholiday=None,
     curmonth=default,
     newmonth=default,newday=3
 }
@@ -74,13 +94,25 @@
     }
 }
 
-\newcommand{\wkday}[3]{
+\newcommand{\wkday}[6]{
 	% 1 day of the week
 	% 2 number of the day
 	% 3 month side label
-    \wkmultirow{#3} & {\weekdayfont #1} & \\ \cline{3-3}
-    & \numdayfont{#2} & \\\cline{3-3}
-    & & \\\cline{3-3}
+    % 4 color of the weekday
+    % 5 color of the day number
+    % 6 holiday name
+    \wkmultirow{#3}
+    &
+    \ifthenelse{\equal{#6}{}}
+        {\weekdayfont{#4} #1}
+        {\weekdayfont{black} #1}
+    & \\ \cline{3-3}
+    &
+    \ifthenelse{\equal{#6}{}}
+        {\numdayfont{#5}{#2}}
+        {\numdayfont{black}{#2}}
+    & \\ \cline{3-3}
+    & \holidayfont{#6} & \\\cline{3-3}
     \cline{2-3}
 }
 
@@ -92,13 +124,13 @@
     \begin{tabular}{p{\wkmnthwdth}@{}p{\wklxwdth}@{\vline}p{\wkrxwdth}<{\rule[-2mm]{0pt}{\wkrowh}}}
     \cline{2-3}
     %\wkday{\wkdaya}{\nda}{\ncmonth}
-    \wkday{\wkdaya}{\nda}{\daymonth{1}{1}{\ncmonth}}
-    \wkday{\wkdayb}{\ndb}{\daymonth{\nnday}{2}{\nnmonth}}
-    \wkday{\wkdayc}{\ndc}{\daymonth{\nnday}{3}{\nnmonth}}
-    \wkday{\wkdayd}{\ndd}{\daymonth{\nnday}{4}{\nnmonth}}
-    \wkday{\wkdaye}{\nde}{\daymonth{\nnday}{5}{\nnmonth}}
-    \wkday{\wkdayf}{\ndf}{\daymonth{\nnday}{6}{\nnmonth}}
-    \wkday{\wkdayg}{\ndg}{\daymonth{\nnday}{7}{\nnmonth}}
+    \wkday{\wkdaya}{\nda}{\daymonth{1}{1}{\ncmonth}}{black}{rgray}{\hola}
+    \wkday{\wkdayb}{\ndb}{\daymonth{\nnday}{2}{\nnmonth}}{black}{rgray}{\holb}
+    \wkday{\wkdayc}{\ndc}{\daymonth{\nnday}{3}{\nnmonth}}{black}{rgray}{\holc}
+    \wkday{\wkdayd}{\ndd}{\daymonth{\nnday}{4}{\nnmonth}}{black}{rgray}{\hold}
+    \wkday{\wkdaye}{\nde}{\daymonth{\nnday}{5}{\nnmonth}}{black}{rgray}{\hole}
+    \wkday{\wkdayf}{\ndf}{\daymonth{\nnday}{6}{\nnmonth}}{black}{rgray}{\holf}
+    \wkday{\wkdayg}{\ndg}{\daymonth{\nnday}{7}{\nnmonth}}{black}{black}{\holg}
     \end{tabular}
 }
 
@@ -131,12 +163,11 @@
     \ttdayfont{\wkdayb} &
     \ttdayfont{\wkdayc} &
     \ttdayfont{\wkdayd} &
-    \ttdayfont{\wkdaye} &
-    \ttdayfont{\wkdayf}
+    \ttdayfont{\wkdaye}
 }
 
-\newcommand{\ttcolwdth}{25mm}
-\newcommand{\tttimewdth}{10mm}
+\newcommand{\ttcolwdth}{30mm}
+\newcommand{\tttimewdth}{30mm}
 \newcommand{\ttrowh}{5mm}
 
 % https://tex.stackexchange.com/a/12712
@@ -146,45 +177,43 @@
 
 \newcommand{\timetable}[1]{
     \noindent\rule{5mm}{0pt}\tttitle{#1}
-    \hfill\tttitle{#1}\rule{5mm}{0pt}    
+    \hfill
     \begin{center}
     \color{rgray!60}
 
     \medskip
 
     \begin{tabular}{
-        R{\tttimewdth} 
+        C{\tttimewdth} 
         |C{\ttcolwdth}<{\rule[-2mm]{0pt}{\ttrowh}}
         |C{\ttcolwdth}
         |C{\ttcolwdth}
         |C{\ttcolwdth}
         |C{\ttcolwdth}
-        |C{\ttcolwdth}
-        |L{\tttimewdth} 
     }
         & \ttweekdays \\\hline
-        \timefont{08:15} & & & & & & & \timefont{08:15} \\\cline{2-7}
-        & & & & & &  \\\hline
-        \timefont{09:15} & & & & & & & \timefont{09:15} \\\cline{2-7}
-        & & & & & &  \\\hline
-        \timefont{10:15} & & & & & & & \timefont{10:15} \\\cline{2-7}
-        & & & & & &  \\\hline
-        \timefont{11:15} & & & & & & & \timefont{11:15} \\\cline{2-7}
-        & & & & & &  \\\hline
-        \timefont{12:15} & & & & & & & \timefont{12:15} \\\cline{2-7}
-        & & & & & &  \\\hline
-        \timefont{13:15} & & & & & & & \timefont{13:15} \\\cline{2-7}
-        & & & & & &  \\\hline
-        \timefont{14:15} & & & & & & & \timefont{14:15} \\\cline{2-7}
-        & & & & & &  \\\hline
-        \timefont{15:15} & & & & & & & \timefont{15:15} \\\cline{2-7}
-        & & & & & &  \\\hline
-        \timefont{16:15} & & & & & & & \timefont{16:15} \\\cline{2-7}
-        & & & & & &  \\\hline
-        \timefont{17:15} & & & & & & & \timefont{17:15} \\\cline{2-7}
-        & & & & & &  \\\hline
-        \timefont{18:15} & & & & & & & \timefont{18:15} \\\cline{2-7}
-        & & & & & &  \\\hline
+        \timefont{08:00} & & & & & \\\cline{2-6}
+        & & & &  \\\hline
+        \timefont{09:00} & & & & & \\\cline{2-6}
+        & & & &  \\\hline
+        \timefont{10:00} & & & & & \\\cline{2-6}
+        & & & &  \\\hline
+        \timefont{11:00} & & & & & \\\cline{2-6}
+        & & & &  \\\hline
+        \timefont{12:00} & & & & & \\\cline{2-6}
+        & & & &  \\\hline
+        \timefont{13:00} & & & & & \\\cline{2-6}
+        & & & &  \\\hline
+        \timefont{14:00} & & & & & \\\cline{2-6}
+        & & & &  \\\hline
+        \timefont{15:00} & & & & & \\\cline{2-6}
+        & & & &  \\\hline
+        \timefont{16:00} & & & & & \\\cline{2-6}
+        & & & &  \\\hline
+        \timefont{17:00} & & & & & \\\cline{2-6}
+        & & & &  \\\hline
+        \timefont{18:00} & & & & & \\\cline{2-6}
+        & & & &  \\\hline
     \end{tabular}
     \end{center}
     \vfill

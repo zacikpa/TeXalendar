@@ -6,7 +6,7 @@ weeks.tex: gencal.py
 localisation.tex: ;
 
 cal.pdf: calendar.cls cal.tex weeks.tex gencal.py localisation.tex
-	xelatex cal.tex
+	lualatex cal.tex
 
 halved.pdf: cal.pdf
 	mutool poster -x 2 cal.pdf halved.pdf

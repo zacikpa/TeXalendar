@@ -1,4 +1,6 @@
 import locale
+from datetime import date
+import holidays
 from calendar import Calendar
 
 from config import CONF
@@ -70,6 +72,7 @@ def printweek(week):
         for i in range(7):
             d = DAYKEYS[i]
             attr.append("d{}={}".format(d, week[d]))
+            attr.append("{}holiday={}".format(d, week[d+"-holiday"]))
         for s in ["curmonth", "newmonth", "newday"]:
             attr.append("{}={}".format(s, week[s]))
         attr = ", ".join(attr)
@@ -83,6 +86,9 @@ def numtoname(num):
 
 def printmonth(year, month, first=False):
     weeks = cal.monthdatescalendar(year, month)
+    sk_holidays = holidays.SK()
+    cz_holidays = holidays.CZ()
+    church_holidays =  holidays.CX()
     curweek = {}
     # Juggling to avoid duplicate weeks.
     # The first week of the month shouldn't be printed
@@ -102,7 +108,24 @@ def printmonth(year, month, first=False):
         new = 0
         for r in range(0, 7):
             today = weeks[j][r]
+            sk_holiday = sk_holidays.get(f"{today.year}-{today.month}-{today.day}")
+            cz_holiday = cz_holidays.get(f"{today.year}-{today.month}-{today.day}")
+            church_holiday = church_holidays.get(f"{today.year}-{today.month}-{today.day}")
             curweek[DAYKEYS[r]] = today.day
+            if sk_holiday and cz_holiday and church_holiday:
+                curweek[DAYKEYS[r] + "-holiday"] = sk_holiday + " (SR/ČR/PS)"
+            elif sk_holiday and cz_holiday:
+                curweek[DAYKEYS[r] + "-holiday"] = sk_holiday + " (SR/ČR)"
+            elif sk_holiday and church_holiday:
+                curweek[DAYKEYS[r] + "-holiday"] = sk_holiday + " (SR/PS)"
+            elif sk_holiday:
+                curweek[DAYKEYS[r] + "-holiday"] = sk_holiday + " (SR)"
+            elif church_holiday:
+                curweek[DAYKEYS[r] + "-holiday"] = church_holiday + " (PS)"
+            elif cz_holiday:
+                curweek[DAYKEYS[r] + "-holiday"] = cz_holiday + " (ČR)"
+            else:
+                curweek[DAYKEYS[r] + "-holiday"] = ""
             if curmonthnum != today.month and not new:
                 new = 1
                 curweek["newmonth"] = numtoname(today.month)
@@ -130,7 +153,9 @@ if __name__ == "__main__":
     month_names = get_month_names()
     write_localisation()
 
-    time_table = CONF["Planner"]["time_table"] == "True"
+    year = int(CONF["Planner"]["first_year"])
+    wk = printweeks(year, 1, 12, first=True)
+    #wk += printweeks(year + 1, 1, 9)
 
     if time_table:
         printtimetable()
